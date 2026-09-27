@@ -1,0 +1,18 @@
+TraceMap
+Copyright (c) 2026 TraceMap contributors
+Licensed under the MIT License (see LICENSE).
+
+------------------------------------------------------------------------------
+This product depends on CodeMap Explorer, a pre-existing open-source static
+call-graph engine, used here as an unmodified dependency.
+
+    CodeMap Explorer
+    https://github.com/Slo-Pix/codemap
+    Copyright (c) CodeMap contributors
+    Licensed under the Apache License, Version 2.0
+    http://www.apache.org/licenses/LICENSE-2.0
+
+CodeMap is NOT part of this hackathon submission. It is disclosed as a
+dependency. TraceMap — the evidence-pack builder, the IBM Bob 2.0 fix engine,
+the verification harness, and the terminal interface — is the new work.
+------------------------------------------------------------------------------

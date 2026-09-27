@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/slopixel/lablab/tracemap/examples/buggy_app/main.py", line 14, in <module>
+    main()
+  File "/home/slopixel/lablab/tracemap/examples/buggy_app/main.py", line 10, in main
+    print(build_report(load_expenses()))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/slopixel/lablab/tracemap/examples/buggy_app/report.py", line 35, in build_report
+    averages = summarize_expenses(expenses)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/slopixel/lablab/tracemap/examples/buggy_app/report.py", line 28, in summarize_expenses
+    category: average_per_category(entries_for(expenses, category))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/slopixel/lablab/tracemap/examples/buggy_app/report.py", line 16, in average_per_category
+    return divide_total(total, len(entries))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/slopixel/lablab/tracemap/examples/buggy_app/report.py", line 10, in divide_total
+    return total / count
+           ~~~~~~^~~~~~~
+ZeroDivisionError: division by zero
