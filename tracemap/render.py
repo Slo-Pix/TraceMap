@@ -25,6 +25,32 @@ from tracemap.theme import (
 __all__ = ["render_pack"]
 
 
+def _repo_root(pack: "EvidencePack") -> str:
+    """Infer the indexed repo root by subtracting the symbol's relative path
+    from its absolute frame path. Returns "" when it cannot be determined."""
+    sym = pack.failing_symbol
+    if sym is None:
+        return ""
+    abs_path = pack.failing_frame.path.replace("\\", "/")
+    rel = str(sym.path).replace("\\", "/")
+    if abs_path.endswith(rel):
+        return abs_path[: -len(rel)]
+    return ""
+
+
+def _short(raw: str, root: str) -> str:
+    """Strip the repo root so every table in the pack uses relative paths.
+
+    Frames arrive absolute while the blast-radius and covering-test sections
+    are already repo-relative; without this the columns disagree and long
+    prefixes push the right-hand column off narrow terminals.
+    """
+    if not root:
+        return raw
+    norm = raw.replace("\\", "/")
+    return norm[len(root):] if norm.startswith(root) else raw
+
+
 def _section_title(text: str) -> Text:
     t = Text(text, style=f"bold {TITLE}")
     return t
@@ -51,10 +77,11 @@ def render_pack(pack: EvidencePack, *, console: Console | None = None) -> None:
     console.print(Panel(header, border_style=ACCENT))
 
     # ── Failing frame ───────────────────────────────────────────────────────
+    root = _repo_root(pack)
     console.print(_section_title("Failing Frame"))
     frame_text = Text()
     frame_text.append(f"{pack.failing_frame.name}", style=f"bold {FAIL}")
-    frame_text.append(f"  {pack.failing_frame.path}", style=TEXT)
+    frame_text.append(f"  {_short(pack.failing_frame.path, root)}", style=TEXT)
     frame_text.append(f":{pack.failing_frame.line}", style=f"bold {FAIL}")
     console.print(frame_text)
 
@@ -102,7 +129,7 @@ def render_pack(pack: EvidencePack, *, console: Console | None = None) -> None:
     for i, (frame, sym) in enumerate(pack.call_stack):
         depth_marker = Text(f"[{i}]", style=MUTED)
         fn_text = Text(frame.name, style=f"bold {FAIL}" if i == 0 else f"bold {WARN}")
-        loc_text = Text(f"{frame.path}:{frame.line}", style=MUTED)
+        loc_text = Text(f"{_short(frame.path, root)}:{frame.line}", style=MUTED)
         sym_text = (
             Text(sym.qualified_name, style=INFO)
             if sym is not None
@@ -149,5 +176,5 @@ def render_pack(pack: EvidencePack, *, console: Console | None = None) -> None:
         for frame in pack.unmapped_frames:
             t = Text()
             t.append(frame.name, style=MUTED)
-            t.append(f"  {frame.path}:{frame.line}", style=MUTED)
+            t.append(f"  {_short(frame.path, root)}:{frame.line}", style=MUTED)
             console.print(t)
