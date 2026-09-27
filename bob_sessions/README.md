@@ -14,6 +14,7 @@ Each screenshot shows the task title, its Bobcoin cost, and the context breakdow
 | task06+07 | **build feature** — fix engine, CLI, and the end-to-end proof | 13.27 | `tracemap_task06_07_engine_and_proof_summary.png` |
 | task08 | **build feature** — the Textual TUI | 9.71 | `tracemap_task08_tui_build_summary.png` |
 | task08 | **parallel agents** — three subagents, one per TUI widget | (same task) | `tracemap_task08_parallel_subagents_fanout.png` |
+| task10 | **document understanding** — README, docstrings, commit | 3.14 | `tracemap_task10_docs_and_docstrings_summary.png` |
 
 ## Parallel execution
 
