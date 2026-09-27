@@ -78,12 +78,24 @@ class ProofModal(ModalScreen[None]):
     DEFAULT_CSS = DEFAULT_CSS
 
     def __init__(self, patch_diff: str, before: str, after: str) -> None:
+        """Store patch/before/after content to be rendered in compose.
+
+        Parameters
+        ----------
+        patch_diff:
+            Unified diff string produced by the fix engine (may be empty).
+        before:
+            Raw Bob response or "(fix pending)" shown as the FAIL block.
+        after:
+            Patch diff or "(no patch)" shown as the PASS block.
+        """
         super().__init__()
         self._patch_diff = patch_diff
         self._before = before
         self._after = after
 
     def compose(self) -> ComposeResult:
+        """Build the scrollable proof layout: PATCH, BEFORE, and AFTER blocks."""
         with Vertical(id="proof-dialog"):
             self.border_title = "Proof of Fix"
             with VerticalScroll(id="proof-scroll"):
@@ -100,6 +112,7 @@ class ProofModal(ModalScreen[None]):
                 yield Static(self._after, classes="section-body")
 
     def on_mount(self) -> None:
+        """Set the border title on the dialog container after mount."""
         self.query_one("#proof-dialog").border_title = "Proof of Fix"
 
     def action_dismiss_modal(self) -> None:

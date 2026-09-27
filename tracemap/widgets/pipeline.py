@@ -64,6 +64,7 @@ class PipelineRail(Widget):
     """
 
     def __init__(self, **kwargs: object) -> None:
+        """Initialise all five pipeline stages in ``pending`` state."""
         super().__init__(**kwargs)
         self._states: list[_StageState] = [_StageState(name=s) for s in _STAGES]
 

@@ -285,7 +285,7 @@ class HelpScreen(ModalScreen[None]):
     """
 
     def compose(self) -> ComposeResult:
-
+        """Build the help panel with key-binding sections."""
         lines: list[str] = []
         for section_title, bindings in _HELP_SECTIONS:
             lines.append(f"[bold {TITLE}]{section_title}[/]\n")
@@ -299,6 +299,7 @@ class HelpScreen(ModalScreen[None]):
         yield panel
 
     def action_dismiss_help(self) -> None:
+        """Close the help modal."""
         self.dismiss()
 
 
@@ -335,6 +336,7 @@ class TraceScreen(ModalScreen[str | None]):
     """
 
     def compose(self) -> ComposeResult:
+        """Build the trace-paste dialog."""
         dialog = Vertical(
             Input(placeholder="Paste traceback here…", id="trace-text"),
             Static("ctrl+s to load  ·  escape to cancel", id="trace-hint"),
@@ -344,13 +346,16 @@ class TraceScreen(ModalScreen[str | None]):
         yield dialog
 
     def on_mount(self) -> None:
+        """Focus the text input on open."""
         self.query_one("#trace-text", Input).focus()
 
     def action_submit_trace(self) -> None:
+        """Dismiss with the entered text, or None if empty."""
         value = self.query_one("#trace-text", Input).value.strip()
         self.dismiss(value or None)
 
     def action_cancel_trace(self) -> None:
+        """Dismiss without loading a trace."""
         self.dismiss(None)
 
 
@@ -378,6 +383,7 @@ class TraceMapApp(App[None]):
     ]
 
     def __init__(self, crash_path: Path | None = None) -> None:
+        """Initialise the app, optionally pre-loading *crash_path* on mount."""
         super().__init__()
         self._crash_path = crash_path
         self._repo_path: Path | None = None
@@ -390,6 +396,7 @@ class TraceMapApp(App[None]):
     # ------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
+        """Build the three-column layout: pipeline rail, frames table, inspector."""
         pipeline_panel = Vertical(PipelineRail(id="pipeline"), id="pipeline-panel")
         pipeline_panel.border_title = r"\[f] Pipeline"
 
@@ -430,6 +437,7 @@ class TraceMapApp(App[None]):
     # ------------------------------------------------------------------
 
     def on_mount(self) -> None:
+        """Focus the frames table and auto-load crash_path when supplied."""
         # Focus the frames table so global keys (f/x/b/p) fire immediately.
         # The traceback input is driven via the `t` binding (TraceScreen modal)
         # and by typing a path and pressing Enter — it does not need startup focus.
@@ -672,6 +680,7 @@ class TraceMapApp(App[None]):
     # ------------------------------------------------------------------
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Load the crash file when the user presses Enter in the path input."""
         if event.input.id == "trace-input":
             path = Path(event.value.strip())
             if path.exists():
