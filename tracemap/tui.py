@@ -367,7 +367,7 @@ class TraceScreen(ModalScreen[str | None]):
 class TraceMapApp(App[None]):
     """TraceMap — crash to green."""
 
-    TITLE = "TraceMap — crash to green"
+    TITLE = "TraceMap"
     CSS = _CSS
 
     BINDINGS: ClassVar[list[Binding]] = [
