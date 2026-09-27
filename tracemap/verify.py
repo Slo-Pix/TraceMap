@@ -44,8 +44,13 @@ class VerifyResult:
 
     @property
     def ok(self) -> bool:
-        """True when no regressions were introduced."""
-        return len(self.regression_introduced) == 0
+        """True when no tests failed after the patch.
+
+        ``regression_introduced`` is always empty when ``passed_before`` is
+        empty (the single-pass CLI workflow), so we also check ``failed_after``
+        directly so that a broken patch is not silently reported as green.
+        """
+        return len(self.failed_after) == 0 and len(self.regression_introduced) == 0
 
 
 def _pytest_json(repo: Path, test_paths: list[str]) -> dict[str, str]:

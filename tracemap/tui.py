@@ -567,9 +567,12 @@ class TraceMapApp(App[None]):
     def _on_trace_pasted(self, text: str | None) -> None:
         if not text:
             return
+        import os
         import tempfile
 
-        tmp = Path(tempfile.mktemp(suffix=".txt"))
+        fd, tmp_str = tempfile.mkstemp(suffix=".txt")
+        os.close(fd)
+        tmp = Path(tmp_str)
         tmp.write_text(text, encoding="utf-8")
         self.query_one("#trace-input", Input).value = str(tmp)
         self._load_crash(tmp)
