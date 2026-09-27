@@ -75,9 +75,7 @@ def _print_fix_result(result: FixResult) -> None:
             style=WARN,
         )
         console.print(t)
-        console.print(
-            Text(f"  Pack : {result.pack_path}", style=MUTED)
-        )
+        console.print(Text(f"  Pack : {result.pack_path}", style=MUTED))
         console.print(
             Text(
                 "  Paste the instruction from the .instruction.txt file into Bob when ready.",
@@ -111,9 +109,31 @@ def _print_fix_result(result: FixResult) -> None:
 # ---------------------------------------------------------------------------
 
 
-@click.group()
-def main() -> None:
-    """TraceMap — crash to green."""
+@click.group(invoke_without_command=True)
+@click.pass_context
+def main(ctx: click.Context) -> None:
+    """TraceMap — crash to green.
+
+    Run with no arguments to open the Textual TUI.
+    """
+    if ctx.invoked_subcommand is None:
+        from tracemap.tui import main as tui_main
+
+        tui_main()
+
+
+@main.command("tui")
+@click.argument(
+    "crash_file",
+    metavar="[crash-file]",
+    required=False,
+    type=click.Path(exists=False, path_type=Path),
+)
+def tui_cmd(crash_file: Path | None) -> None:
+    """Open the Textual TUI, optionally pre-loading a crash file."""
+    from tracemap.tui import main as tui_main
+
+    tui_main(crash_path=crash_file)
 
 
 @main.command("fix")
@@ -148,9 +168,7 @@ def fix_cmd(trace_file: str, repo_path: Path | None) -> None:
             repo_path = trace_path.parent
             # Walk up to a directory that looks like a repo root (has pyproject.toml / setup.py)
             for candidate in [trace_path.parent, *trace_path.parents]:
-                if (candidate / "pyproject.toml").exists() or (
-                    candidate / "setup.py"
-                ).exists():
+                if (candidate / "pyproject.toml").exists() or (candidate / "setup.py").exists():
                     repo_path = candidate
                     break
         else:
@@ -197,9 +215,7 @@ def fix_cmd(trace_file: str, repo_path: Path | None) -> None:
                     f"{len(verify.failed_after)} failed)"
                 )
             else:
-                _failed(
-                    f"Regressions introduced: {', '.join(verify.regression_introduced)}"
-                )
+                _failed(f"Regressions introduced: {', '.join(verify.regression_introduced)}")
                 sys.exit(2)
         else:
             _pending("No covering tests found — skipping verify step.")
