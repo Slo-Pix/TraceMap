@@ -243,6 +243,14 @@ tests/test_evidence.py .............................                      [100%]
 ============================== 29 passed in 0.05s ==============================
 ```
 
+> **Note on the count:** this transcript is the unmodified output captured when
+> task07 ran. The suite has grown to 38 tests since (task08 added TUI tests and
+> task09 added a verify guard). The numbers here are left exactly as produced
+> rather than updated, so the proof stays an authentic record of that run.
+
+```text
+```
+
 ---
 
 ## 8. Application runs to completion, exit 0 (STEP 3)

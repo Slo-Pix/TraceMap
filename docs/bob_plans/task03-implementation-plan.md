@@ -2,8 +2,8 @@
 
 ## Governing Rules and Guidelines
 
-This plan is governed by the constraints in [`tracemap/AGENTS.md`](AGENTS.md) and the project
-overview in [`plan.md`](../plan.md). Every decision below traces directly to those documents.
+This plan is governed by the constraints in [`tracemap/AGENTS.md`](../../AGENTS.md) and the project
+overview in `plan.md` (workspace coordination file, not shipped). Every decision below traces directly to those documents.
 
 | Rule | Source |
 |---|---|
@@ -111,9 +111,9 @@ Compact enough to fit in a Bob context window.
 3. Create `tracemap/tests/test_evidence.py` asserting the above outcomes against `crash.txt`.
 
 ### Relevant Context
-- CodeMap API: [`tracemap/AGENTS.md`](AGENTS.md) §2–4
-- Fixture: [`tracemap/examples/buggy_app/crash.txt`](examples/buggy_app/crash.txt)
-- Bug: `divide_total` in [`tracemap/examples/buggy_app/report.py`](examples/buggy_app/report.py) line 10
+- CodeMap API: [`tracemap/AGENTS.md`](../../AGENTS.md) §2–4
+- Fixture: [`tracemap/examples/buggy_app/crash.txt`](../../examples/buggy_app/crash.txt)
+- Bug: `divide_total` in [`tracemap/examples/buggy_app/report.py`](../../examples/buggy_app/report.py) line 10
 - `is_test_path` import: `from codemap.model import is_test_path`
 
 ---
@@ -157,7 +157,7 @@ Crash-site row styled `FAIL`. No hex literals anywhere.
    `Console(file=io.StringIO())` and asserts the output contains `divide_total`.
 
 ### Relevant Context
-- Palette: [`tracemap/tracemap/theme.py`](tracemap/theme.py)
+- Palette: [`tracemap/tracemap/theme.py`](../../tracemap/theme.py)
 - `EvidencePack`: Sub-Task 1 above
 
 ---
@@ -377,7 +377,7 @@ correctly mapped frames, and `f` drives the REAL engine with the pipeline rail u
 
 ### Relevant Context
 - CodeMap TUI reference: `codemap-ref/src/codemap/tui.py` (read-only)
-- Palette: [`tracemap/tracemap/theme.py`](tracemap/theme.py)
+- Palette: [`tracemap/tracemap/theme.py`](../../tracemap/theme.py)
 - Engine: Sub-Task 3 (`run_fix`)
 - Evidence: Sub-Task 1 (`build_evidence`)
 - If running short on time: ship pipeline rail + frames table + theme; cut inspector + proof modal
