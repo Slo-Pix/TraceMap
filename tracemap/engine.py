@@ -129,18 +129,37 @@ def _invoke_file_handoff(pack_path: Path, mode: str, raw_md: str) -> FixResult:
     instruction_path = pack_path.with_suffix(".instruction.txt")
 
     ready_to_paste = (
-        "# TraceMap fix — ready-to-paste Bob instruction\n"
+        "# TraceMap fix — how to invoke Bob manually\n"
         "#\n"
-        "# bob is not on PATH; run the command below manually once bob is installed.\n"
+        "# `bob` shell is not on PATH, so the fix could not run automatically.\n"
+        "# Follow these steps in Bob IDE to apply the fix:\n"
+        "#\n"
+        "#   1. Open this repository in Bob IDE.\n"
+        f'#   2. Switch to the "{mode}" mode\n'
+        "#      (Settings → Modes, or the mode selector in the chat panel).\n"
+        f'#   3. Attach the evidence pack as context:\n'
+        f'#      File: {pack_path}\n'
+        "#   4. Send the following instruction (copy the block below the dashes):\n"
         "# --------------------------------------------------------------------\n\n"
-        f'bobide chat -m {mode} --add-file "{pack_path}" "{_INSTRUCTION}"\n'
+        f"{_INSTRUCTION}\n\n"
+        "# --------------------------------------------------------------------\n"
+        "# Future option — once `bob` shell (bob -p) is available on PATH,\n"
+        "# the invocation that will work is:\n"
+        "#\n"
+        f"# bob -p '<instruction>' \\\n"
+        f"#     --chat-mode={mode} \\\n"
+        f"#     --yolo \\\n"
+        f"#     --hide-intermediary-output \\\n"
+        f'#     --add-file "{pack_path}"\n'
+        "#\n"
+        "# where <instruction> is the text block above.\n"
     )
 
     _write_pack(pack_path, raw_md)
     instruction_path.write_text(ready_to_paste, encoding="utf-8")
 
     print(f"[tracemap] Evidence pack written → {pack_path}")
-    print(f"[tracemap] Paste instruction   → {instruction_path}")
+    print(f"[tracemap] Open in Bob IDE and follow → {instruction_path}")
 
     return FixResult(
         patch_diff="",

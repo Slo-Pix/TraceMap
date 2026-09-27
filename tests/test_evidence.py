@@ -116,11 +116,23 @@ class TestBlastRadius:
         assert 1 in depths, "Expected at least one depth-1 direct caller."
 
     def test_blast_radius_tuples(self, pack: EvidencePack) -> None:
+        from codemap.model import Symbol
+
         for item in pack.blast_radius:
-            sid, depth = item
-            assert isinstance(sid, str)
+            sym, depth = item
+            assert isinstance(sym, Symbol)
             assert isinstance(depth, int)
             assert depth >= 1
+
+    def test_blast_radius_direct_callers_are_resolved(self, pack: EvidencePack) -> None:
+        """Depth-1 entries must be the two direct callers with real qualified names."""
+        depth1_names = {sym.name for sym, depth in pack.blast_radius if depth == 1}
+        assert "average_per_category" in depth1_names, (
+            f"average_per_category missing from depth-1 blast radius; got {depth1_names}"
+        )
+        assert "overall_average" in depth1_names, (
+            f"overall_average missing from depth-1 blast radius; got {depth1_names}"
+        )
 
 
 class TestSource:
@@ -216,3 +228,25 @@ class TestRenderMarkdown:
         md = render_markdown(pack)
         assert "average_per_category" in md
         assert "overall_average" in md
+
+    def test_blast_radius_section_contains_resolved_names(self, pack: EvidencePack) -> None:
+        """Blast radius in render_markdown must show qualified names, not opaque hash IDs."""
+        md = render_markdown(pack)
+        # Locate just the blast-radius section to avoid matching the callers section.
+        blast_start = md.find("### Blast Radius")
+        assert blast_start != -1, "Blast Radius section not found in render_markdown output"
+        blast_section = md[blast_start:]
+        assert "average_per_category" in blast_section, (
+            "average_per_category must appear in the Blast Radius section of render_markdown; "
+            "opaque hash IDs make blast-radius protection unusable."
+        )
+        assert "overall_average" in blast_section, (
+            "overall_average must appear in the Blast Radius section of render_markdown."
+        )
+        # Confirm no raw hex IDs sneak in (hashes are 16 hex chars with no word chars around them).
+        import re
+        hex_ids = re.findall(r'\b[0-9a-f]{16}\b', blast_section)
+        assert not hex_ids, (
+            f"Raw symbol hash IDs found in blast-radius section: {hex_ids}. "
+            "Resolve symbols before rendering."
+        )

@@ -13,7 +13,6 @@ from codemap.cache import load_or_build
 from codemap.model import CodeIndex, Symbol, is_test_path
 from codemap.trace import Frame, map_frames, parse_trace
 
-
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
@@ -41,8 +40,8 @@ class EvidencePack:
     callees: list[Symbol]
     """Direct callees of the failing symbol."""
 
-    blast_radius: list[tuple[str, int]]
-    """(symbol_id, depth) BFS list of every transitive caller, shallowest first."""
+    blast_radius: list[tuple[Symbol, int]]
+    """(Symbol, depth) BFS list of every transitive caller, shallowest first."""
 
     covering_tests: list[Symbol]
     """Test symbols that transitively call the failing symbol."""
@@ -126,7 +125,12 @@ def build_evidence(trace_text: str, repo: Path) -> EvidencePack:
             for cid in call.resolved_ids
             if cid in index.symbols
         ]
-        blast_radius = index.transitive_callers(failing_symbol.id)
+        raw_blast = index.transitive_callers(failing_symbol.id)
+        blast_radius = [
+            (index.symbols[sid], depth)
+            for sid, depth in raw_blast
+            if sid in index.symbols
+        ]
         covering_tests = _tests_covering(index, failing_symbol.id)
 
     unmapped = [frame for frame, sym in mapped if sym is None]
@@ -197,15 +201,16 @@ def render_markdown(pack: EvidencePack) -> str:
         lines.append("- none")
 
     # --- blast radius ---
-    lines.append("\n### Blast Radius (transitive callers)")
+    lines.append("\n### Blast Radius (transitive callers, depth-ranked)")
     if pack.blast_radius:
-        for sid, depth in pack.blast_radius[:20]:
-            label = sid
-            lines.append(f"- depth {depth}: `{label}`")
-        if len(pack.blast_radius) > 20:
-            lines.append(f"- … and {len(pack.blast_radius) - 20} more")
+        lines.append("\n| depth | symbol | path |")
+        lines.append("|---|---|---|")
+        for sym, depth in pack.blast_radius:
+            lines.append(
+                f"| {depth} | `{sym.qualified_name}` | `{sym.path}:{sym.line}` |"
+            )
     else:
-        lines.append("- *(none — function is a leaf entry point)*")
+        lines.append("*(none — function is a leaf entry point)*")
 
     # --- covering tests ---
     lines.append("\n### Covering Tests")

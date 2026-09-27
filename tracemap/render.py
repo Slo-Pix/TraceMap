@@ -116,16 +116,17 @@ def render_pack(pack: EvidencePack, *, console: Console | None = None) -> None:
     console.print(_section_title(f"Blast Radius  ({len(pack.blast_radius)} transitive callers)"))
     if pack.blast_radius:
         br_table = Table(show_header=False, box=None, padding=(0, 1))
-        for sid, depth in pack.blast_radius[:15]:
+        for sym, depth in pack.blast_radius[:15]:
             br_table.add_row(
                 Text(f"depth {depth}", style=MUTED),
-                Text(sid, style=INFO),
+                Text(sym.qualified_name, style=INFO),
+                Text(f"{sym.path}:{sym.line}", style=MUTED),
             )
+        console.print(br_table)
         if len(pack.blast_radius) > 15:
             console.print(
                 Text(f"  … and {len(pack.blast_radius) - 15} more", style=MUTED)
             )
-        console.print(br_table)
     else:
         console.print(Text("  (leaf — no callers)", style=MUTED))
 
