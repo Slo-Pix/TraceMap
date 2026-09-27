@@ -7,7 +7,7 @@ flowchart TD
     A([raw traceback text]) --> B["parse_trace(text)"]
     B --> C[list of Frame objects]
     C --> D["build_index(path)"]
-    D --> E["CodeIndex\n_source_files + resolve_calls"]
+    D --> E["CodeIndex<br/>_source_files + resolve_calls"]
     C --> F["map_frames(index, frames)"]
     E --> F
     F --> G["matched Symbol"]
@@ -45,7 +45,7 @@ flowchart LR
     end
 
     subgraph BOB ["IBM Bob — reasoning"]
-        B1["read evidence pack\nAgent mode"]
+        B1["read evidence pack<br/>Agent mode"]
         B2["write fix patch"]
         B3["write regression test"]
         B4["iterate on test failures"]

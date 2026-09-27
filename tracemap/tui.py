@@ -1,4 +1,4 @@
-"""TraceMap — crash to green  (Textual TUI).
+"""TraceMap (Textual TUI).
 
 Launch with ``tracemap`` (no arguments) or ``tracemap tui``.
 
@@ -365,7 +365,7 @@ class TraceScreen(ModalScreen[str | None]):
 
 
 class TraceMapApp(App[None]):
-    """TraceMap — crash to green."""
+    """The TraceMap terminal application."""
 
     TITLE = "TraceMap"
     CSS = _CSS

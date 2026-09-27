@@ -112,7 +112,7 @@ def _print_fix_result(result: FixResult) -> None:
 @click.group(invoke_without_command=True)
 @click.pass_context
 def main(ctx: click.Context) -> None:
-    """TraceMap — crash to green.
+    """TraceMap.
 
     Run with no arguments to open the Textual TUI.
     """
