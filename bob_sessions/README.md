@@ -10,6 +10,7 @@ Each screenshot shows the task title, its Bobcoin cost, and the context breakdow
 | task03 | create implementation plan (Plan mode) | 0.96 | `tracemap_task03_implementation_plan_summary.png` |
 | task02+03 | **parallel tasks** | — | `tracemap_task02_03_parallel_tasks_evidence.png` |
 | task04 | build feature + iterative debugging | 2.70 | `tracemap_task04_evidence_pack_rootcause_summary.png` |
+| task05 | **work with skills** — authored the runtime fix engine | 1.98 | `tracemap_task05_skills_fixer_mode_summary.png` |
 
 ## Parallel execution
 
@@ -28,6 +29,28 @@ tests so neither can return silently. Test count went 19 → 27.
 
 That loop — build, run against reality, diagnose, repair, guard — is the same loop
 TraceMap automates for its users.
+
+## Bob authored its own runtime engine
+
+`tracemap_task05_skills_fixer_mode_summary.png` shows Bob authoring the `tracemap-fixer`
+custom mode and Skill — an 8-step fix contract (parse → diagnose → read → plan → apply →
+regression test → verify → report) that Bob itself then executes at TraceMap's runtime.
+
+The screenshot captures the dry-run against a real evidence pack. Note where it chose to
+patch:
+
+```
+ROOT CAUSE:   average_per_category passes len(entries) with no empty-list guard;
+              summarize_expenses calls it for every category absent from the dataset
+PATCH:        examples/buggy_app/report.py:15 — guard at the top of average_per_category
+REGRESSION:   test_average_per_category_empty_entries_returns_zero
+BLAST RADIUS: 8 callers checked — all green; application runs to completion.
+```
+
+The crash surfaced in `divide_total`, but the defect was one frame up. Bob used the
+evidence pack's caller list to locate the real fix site — and the Skill requires re-running
+the original failing command and checking the exit code, so a patch that merely changes
+which exception fires is rejected.
 
 ## How Bob built TraceMap
 
