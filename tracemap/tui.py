@@ -452,7 +452,7 @@ class TraceMapApp(App[None]):
             if (candidate / "pyproject.toml").exists() or (candidate / "setup.py").exists():
                 repo = candidate
                 break
-        self._repo_path = repo
+        self._repo_path = repo.resolve()
 
         pipeline = self.query_one("#pipeline", PipelineRail)
         pipeline.set_stage("Trace", "done", str(crash_path.name))

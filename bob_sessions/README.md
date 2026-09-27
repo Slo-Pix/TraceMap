@@ -11,8 +11,31 @@ Each screenshot shows the task title, its Bobcoin cost, and the context breakdow
 | task02+03 | **parallel tasks** | — | `tracemap_task02_03_parallel_tasks_evidence.png` |
 | task04 | build feature + iterative debugging | 2.70 | `tracemap_task04_evidence_pack_rootcause_summary.png` |
 | task05 | **work with skills** — authored the runtime fix engine | 1.98 | `tracemap_task05_skills_fixer_mode_summary.png` |
+| task06+07 | **build feature** — fix engine, CLI, and the end-to-end proof | 13.27 | `tracemap_task06_07_engine_and_proof_summary.png` |
+| task08 | **parallel agents** — three subagents, one per TUI widget | — | `tracemap_task08_parallel_subagents_fanout.png` |
 
 ## Parallel execution
+
+TraceMap's build used Bob's parallelism at both levels.
+
+**Subagent fan-out within one task.** `tracemap_task08_parallel_subagents_fanout.png`
+shows three subagents running concurrently, each owning one TUI widget and each with its
+own tool count and cost:
+
+```
+Dispatch subagent A — widgets/pipeline.py (PipelineRail widget)
+  Write widgets/pipeline.py   Done ·  7 tools · 15.5k · 0.198 ·   46s
+  Write widgets/proof.py      Done · 13 tools · 17.3k · 0.395 ·   53s
+  Write widgets/frames.py     Done · 16 tools · 25.2k · 0.552 · 1m 5s
+All three widgets are built. Now let me read them to verify before assembling tui.py
+```
+
+Three agents, 1.145 coins and ~65 seconds of wall clock for work that would have run
+close to two and a half minutes in sequence. The split is real rather than staged: the
+three widgets share no files, so they could be written simultaneously and assembled
+afterwards — which is exactly what the parent task then did.
+
+**Concurrent top-level tasks.**
 
 `tracemap_task02_03_parallel_tasks_evidence.png` shows two Bob tasks running
 concurrently — the flowchart task and the Plan-mode design task — while task01 sits
@@ -51,6 +74,30 @@ The crash surfaced in `divide_total`, but the defect was one frame up. Bob used 
 evidence pack's caller list to locate the real fix site — and the Skill requires re-running
 the original failing command and checking the exit code, so a patch that merely changes
 which exception fires is rejected.
+
+## The proof session
+
+`tracemap_task06_07_engine_and_proof_summary.png` is the single largest session of the
+build (13.27 coins, 96k context, 11 files changed). It covers `engine.py`, `verify.py`,
+`cli.py`, and the end-to-end proof in `../docs/proof.md`.
+
+Bob located the fix one frame ABOVE the crash. The traceback raised in `divide_total`,
+but the defect was in its caller: `average_per_category` passed `len([])` whenever
+`summarize_expenses` requested a category with no records. Bob read the evidence pack's
+Direct Callers and Blast Radius sections, patched the caller with a two-line guard, and
+wrote `test_average_per_category_empty_entries_returns_zero`.
+
+Verified independently by reverting the patch and re-running the test:
+
+```
+report.py reverted to unpatched:
+    E   ZeroDivisionError: division by zero
+    FAILED test_average_per_category_empty_entries_returns_zero
+patch restored:
+    ....  [100%]  all tests pass
+```
+
+The application now exits 0 and prints `training 0.00` instead of crashing.
 
 ## How Bob built TraceMap
 
