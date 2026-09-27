@@ -2,6 +2,8 @@
 
 **Crash to green — a failing Python traceback becomes a verified fix.**
 
+![TraceMap TUI — the pipeline rail, the mapped call stack, and the blast radius](docs/screenshots/cover.svg)
+
 TraceMap turns a runtime exception into a proven, committed fix in three steps:
 
 1. **Map** — [CodeMap](https://github.com/Slo-Pix/codemap) parses the traceback and indexes the repository, resolving every frame to the exact failing symbol together with its callers, callees, blast radius, and covering tests.
@@ -67,6 +69,9 @@ see [`bob_config/README.md`](bob_config/README.md).
 tracemap fix examples/buggy_app/crash.txt
 ```
 
+![tracemap fix — the evidence pack CodeMap hands to Bob](docs/screenshots/cli_evidence_pack.svg)
+
+
 ### Fix a crash from stdin
 
 ```sh
@@ -79,6 +84,17 @@ python -m myapp 2>&1 | tracemap fix -
 tracemap              # opens TUI
 tracemap tui examples/buggy_app/crash.txt   # pre-loads a crash file
 ```
+
+![The TraceMap TUI](docs/screenshots/tui_main.svg)
+
+Press `x` for the inspector — the failing function's source, its callers and callees:
+
+![Inspector](docs/screenshots/tui_inspector.svg)
+
+Press `b` for the blast radius — every transitive caller, depth-ranked, and the tests covering them:
+
+![Blast radius](docs/screenshots/tui_blast.svg)
+
 
 ---
 
