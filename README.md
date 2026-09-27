@@ -30,32 +30,3 @@ Early prototype — under active development during the hackathon.
 ## License
 
 MIT
-
-
-
-
-Read the CodeMap repository in @codemap-ref and explain how it works. I am building a new tool on
-top of it and need its real API, not its README claims.
-
-Answer specifically:
-1. How does a raw Python traceback become mapped symbols? Name the exact functions and their
-   signatures, and say what order the frames come back in.
-2. How do I get a function's callers, callees, and full transitive blast radius from an index?
-3. How do I find which tests cover a symbol?
-4. Which CLI subcommands support --json, and which do not?
-
-Then run /init and write tracemap/AGENTS.md capturing:
-- GOAL: TraceMap = crash -> CodeMap evidence pack -> Bob writes a verified fix + regression test
-  that FAILS BEFORE and PASSES AFTER.
-- CodeMap (Apache-2.0) is a PRE-EXISTING read-only dependency. TraceMap is the new hackathon build.
-  Never edit CodeMap's source.
-- The exact library API you just found, as a code block. Record that `codemap trace/impact/refs`
-  have NO --json flag, so we use the Python API and never shell out.
-- LAYOUT: workspace root is /home/slopixel/lablab; the repo is tracemap/; the package is
-  tracemap/tracemap/. Never create files outside tracemap/.
-- SCOPE: TraceMap is Python-only end to end (pytest is the only runner wired).
-- CONVENTIONS: Python 3.11+, pytest, MIT, small typed modules, colours only from
-  tracemap/tracemap/theme.py.
-- HARD RULE: every fix ships a regression test that fails before and passes after.
-
-After finishing output results to global Context file - Context.md
