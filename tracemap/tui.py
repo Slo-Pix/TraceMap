@@ -34,11 +34,14 @@ from tracemap.theme import (
     ACCENT,
     BG,
     BORDER,
+    DIM_TEXT,
     HOVER,
     INFO,
     MUTED,
     PANEL,
     PASS,
+    SCROLL_HOVER,
+    SCROLL_TRACK,
     TEXT,
     TITLE,
     WARN,
@@ -57,8 +60,8 @@ Screen {{
     color: {TEXT};
 }}
 * {{
-    scrollbar-color: #2f2f2f;
-    scrollbar-color-hover: #4a4a4a;
+    scrollbar-color: {SCROLL_TRACK};
+    scrollbar-color-hover: {SCROLL_HOVER};
     scrollbar-color-active: {ACCENT};
     scrollbar-background: {PANEL};
     scrollbar-background-hover: {PANEL};
@@ -135,7 +138,7 @@ FramesTable {{
 }}
 DataTable > .datatable--header {{
     background: {PANEL};
-    color: #9a9a9a;
+    color: {DIM_TEXT};
     text-style: bold;
 }}
 DataTable > .datatable--cursor {{
@@ -427,6 +430,10 @@ class TraceMapApp(App[None]):
     # ------------------------------------------------------------------
 
     def on_mount(self) -> None:
+        # Focus the frames table so global keys (f/x/b/p) fire immediately.
+        # The traceback input is driven via the `t` binding (TraceScreen modal)
+        # and by typing a path and pressing Enter — it does not need startup focus.
+        self.query_one("#frames", FramesTable).focus()
         if self._crash_path is not None and self._crash_path.exists():
             self.query_one("#trace-input", Input).value = str(self._crash_path)
             self._load_crash(self._crash_path)
@@ -470,7 +477,7 @@ class TraceMapApp(App[None]):
         pipeline.set_stage("Evidence", "done", detail)
 
         table = self.query_one("#frames", FramesTable)
-        table.load_pack(pack)  # type: ignore[arg-type]
+        table.load_pack(pack, repo=self._repo_path)  # type: ignore[arg-type]
 
         frames_panel = self.query_one("#frames-panel")
         frames_panel.border_subtitle = f"{len(pack.call_stack)} frames  ·  enter/v open in editor"  # type: ignore[union-attr]
