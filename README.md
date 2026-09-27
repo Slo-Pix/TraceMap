@@ -32,19 +32,30 @@ IBM Bob is used at **two distinct moments**:
 
 ## Install
 
-```sh
-pip install tracemap
-```
+Requires Python 3.11+. TraceMap is not on PyPI; install from source.
 
-Or from source:
+CodeMap is a dependency and is also installed from source:
 
 ```sh
-git clone https://github.com/Slo-Pix/tracemap
-cd tracemap
+# 1. the dependency — CodeMap (Apache-2.0)
+git clone https://github.com/Slo-Pix/codemap.git
+pip install ./codemap
+
+# 2. TraceMap
+git clone https://github.com/Slo-Pix/TraceMap.git
+cd TraceMap
 pip install -e ".[dev]"
 ```
 
-Requires Python 3.11+.
+Verify:
+
+```sh
+pytest                                      # 38 tests
+tracemap fix examples/buggy_app/crash.txt   # the demo crash
+```
+
+To let Bob act as the fix engine, also install the custom mode and Skill —
+see [`bob_config/README.md`](bob_config/README.md).
 
 ---
 

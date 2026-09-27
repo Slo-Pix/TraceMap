@@ -12,7 +12,8 @@ Each screenshot shows the task title, its Bobcoin cost, and the context breakdow
 | task04 | build feature + iterative debugging | 2.70 | `tracemap_task04_evidence_pack_rootcause_summary.png` |
 | task05 | **work with skills** — authored the runtime fix engine | 1.98 | `tracemap_task05_skills_fixer_mode_summary.png` |
 | task06+07 | **build feature** — fix engine, CLI, and the end-to-end proof | 13.27 | `tracemap_task06_07_engine_and_proof_summary.png` |
-| task08 | **parallel agents** — three subagents, one per TUI widget | — | `tracemap_task08_parallel_subagents_fanout.png` |
+| task08 | **build feature** — the Textual TUI | 9.71 | `tracemap_task08_tui_build_summary.png` |
+| task08 | **parallel agents** — three subagents, one per TUI widget | (same task) | `tracemap_task08_parallel_subagents_fanout.png` |
 
 ## Parallel execution
 
