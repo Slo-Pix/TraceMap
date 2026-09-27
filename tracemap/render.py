@@ -64,8 +64,6 @@ def render_pack(pack: EvidencePack, *, console: Console | None = None) -> None:
     if pack.failing_symbol is not None:
         sym_text = Text()
         sym_text.append(pack.failing_symbol.qualified_name, style=f"bold {FAIL}")
-        if pack.source:
-            sym_text.append(f"  {pack.failing_symbol.signature}", style=MUTED)
         sym_text.append(
             f"  ({pack.failing_symbol.kind}  line {pack.failing_symbol.line})",
             style=MUTED,
@@ -74,11 +72,34 @@ def render_pack(pack: EvidencePack, *, console: Console | None = None) -> None:
     else:
         console.print(Text("(not in index)", style=MUTED))
 
+    # ── Source ──────────────────────────────────────────────────────────────
+    if pack.source:
+        console.print()
+        console.print(_section_title("Source"))
+        from rich.syntax import Syntax  # local import — rich optional dep
+
+        console.print(Syntax(pack.source, "python", theme="monokai", line_numbers=True,
+                             start_line=pack.failing_symbol.line if pack.failing_symbol else 1))
+
+    # ── Direct callers ───────────────────────────────────────────────────────
+    console.print()
+    console.print(_section_title(f"Direct Callers  ({len(pack.callers)})"))
+    if pack.callers:
+        callers_table = Table(show_header=False, box=None, padding=(0, 1))
+        for sym in pack.callers:
+            callers_table.add_row(
+                Text(sym.name, style=f"bold {INFO}"),
+                Text(f"{sym.path}:{sym.line}", style=MUTED),
+            )
+        console.print(callers_table)
+    else:
+        console.print(Text("  (none)", style=MUTED))
+
     # ── Call stack ──────────────────────────────────────────────────────────
     console.print()
     console.print(_section_title("Call Stack  (crash-site first)"))
     stack_table = Table(show_header=False, box=None, padding=(0, 1))
-    for i, (frame, sym) in enumerate(pack.callers):
+    for i, (frame, sym) in enumerate(pack.call_stack):
         depth_marker = Text(f"[{i}]", style=MUTED)
         fn_text = Text(frame.name, style=f"bold {FAIL}" if i == 0 else f"bold {WARN}")
         loc_text = Text(f"{frame.path}:{frame.line}", style=MUTED)

@@ -56,14 +56,21 @@ class TestEvidencePackStructure:
     def test_has_failing_frame(self, pack: EvidencePack) -> None:
         assert pack.failing_frame is not None
 
-    def test_has_callers_list(self, pack: EvidencePack) -> None:
-        assert isinstance(pack.callers, list)
-        assert len(pack.callers) > 0
+    def test_has_call_stack_list(self, pack: EvidencePack) -> None:
+        assert isinstance(pack.call_stack, list)
+        assert len(pack.call_stack) > 0
 
-    def test_crash_frame_is_first(self, pack: EvidencePack) -> None:
-        """Index 0 must be the crash site (innermost frame)."""
-        first_frame, _ = pack.callers[0]
+    def test_crash_frame_is_first_in_call_stack(self, pack: EvidencePack) -> None:
+        """Index 0 of call_stack must be the crash site (innermost frame)."""
+        first_frame, _ = pack.call_stack[0]
         assert first_frame is pack.failing_frame
+
+    def test_callers_is_list_of_symbols(self, pack: EvidencePack) -> None:
+        from codemap.model import Symbol
+
+        assert isinstance(pack.callers, list)
+        for sym in pack.callers:
+            assert isinstance(sym, Symbol)
 
 
 class TestFailingSymbolIdentification:
@@ -114,6 +121,34 @@ class TestBlastRadius:
             assert isinstance(sid, str)
             assert isinstance(depth, int)
             assert depth >= 1
+
+
+class TestSource:
+    """source must be the real function body text, not the signature string."""
+
+    def test_source_contains_return_statement(self, pack: EvidencePack) -> None:
+        assert "return total / count" in pack.source, (
+            f"Expected 'return total / count' in source, got:\n{pack.source!r}"
+        )
+
+    def test_source_is_multiline(self, pack: EvidencePack) -> None:
+        assert "\n" in pack.source
+
+    def test_source_starts_with_def(self, pack: EvidencePack) -> None:
+        assert pack.source.lstrip().startswith("def divide_total")
+
+
+class TestCallers:
+    """callers must be the two direct callers from index.incoming, not traceback frames."""
+
+    def test_callers_names(self, pack: EvidencePack) -> None:
+        names = {sym.name for sym in pack.callers}
+        assert names == {"average_per_category", "overall_average"}, (
+            f"Expected {{average_per_category, overall_average}}, got {names}"
+        )
+
+    def test_callers_count(self, pack: EvidencePack) -> None:
+        assert len(pack.callers) == 2
 
 
 class TestCallees:
@@ -169,3 +204,15 @@ class TestRenderMarkdown:
         assert "## TraceMap Evidence Pack" in md
         assert "Failing Frame" in md
         assert "Blast Radius" in md
+
+    def test_source_block_in_markdown(self, pack: EvidencePack) -> None:
+        md = render_markdown(pack)
+        assert "```python" in md
+        assert "return total / count" in md, (
+            "render_markdown must emit the actual source body, not just a signature"
+        )
+
+    def test_direct_callers_in_markdown(self, pack: EvidencePack) -> None:
+        md = render_markdown(pack)
+        assert "average_per_category" in md
+        assert "overall_average" in md

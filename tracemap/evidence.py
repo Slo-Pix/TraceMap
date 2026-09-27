@@ -6,7 +6,6 @@ modules consume the frozen ``EvidencePack`` dataclass produced here.
 
 from __future__ import annotations
 
-import textwrap
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -31,10 +30,13 @@ class EvidencePack:
     """The indexed symbol that owns the failing frame, or None if not in index."""
 
     source: str
-    """Failing symbol source signature (qualified_name + signature), or empty string."""
+    """Full source text of the failing function (lines symbol.line..symbol.end_line)."""
 
-    callers: list[tuple[Frame, Symbol | None]]
-    """All mapped frames from the traceback, crash-site first (includes failing_frame)."""
+    call_stack: list[tuple[Frame, Symbol | None]]
+    """Mapped traceback frames, crash-site first (what parse_trace returned)."""
+
+    callers: list[Symbol]
+    """Direct callers of the failing symbol (from index.incoming)."""
 
     callees: list[Symbol]
     """Direct callees of the failing symbol."""
@@ -52,6 +54,14 @@ class EvidencePack:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _read_source(repo: Path, symbol: Symbol) -> str:
+    """Read the exact source lines for *symbol* from disk."""
+    src_file = repo / symbol.path
+    lines = src_file.read_text(encoding="utf-8").splitlines()
+    # symbol.line and symbol.end_line are 1-based
+    return "\n".join(lines[symbol.line - 1 : symbol.end_line])
 
 
 def _tests_covering(index: CodeIndex, symbol_id: str) -> list[Symbol]:
@@ -97,12 +107,18 @@ def build_evidence(trace_text: str, repo: Path) -> EvidencePack:
     if failing_frame is None:
         raise ValueError("No frames found in the supplied traceback text.")
 
-    # callees of the failing symbol (direct)
+    # direct callers / callees and wider blast radius
+    callers: list[Symbol] = []
     callees: list[Symbol] = []
     blast_radius: list[tuple[str, int]] = []
     covering_tests: list[Symbol] = []
 
     if failing_symbol is not None:
+        callers = [
+            index.symbols[call.caller_id]
+            for call in index.incoming(failing_symbol.id)
+            if call.caller_id is not None and call.caller_id in index.symbols
+        ]
         raw_callees = index.outgoing(failing_symbol.id)
         callees = [
             index.symbols[cid]
@@ -115,17 +131,14 @@ def build_evidence(trace_text: str, repo: Path) -> EvidencePack:
 
     unmapped = [frame for frame, sym in mapped if sym is None]
 
-    source = (
-        f"{failing_symbol.qualified_name}{failing_symbol.signature}"
-        if failing_symbol is not None
-        else ""
-    )
+    source = _read_source(repo, failing_symbol) if failing_symbol is not None else ""
 
     return EvidencePack(
         failing_frame=failing_frame,
         failing_symbol=failing_symbol,
         source=source,
-        callers=mapped,
+        call_stack=mapped,
+        callers=callers,
         callees=callees,
         blast_radius=blast_radius,
         covering_tests=covering_tests,
@@ -146,40 +159,47 @@ def render_markdown(pack: EvidencePack) -> str:
 
     # --- failing frame ---
     lines.append("### Failing Frame")
-    lines.append(
-        f"- **file**: `{pack.failing_frame.path}` line {pack.failing_frame.line}"
-        f"  (`{pack.failing_frame.name}`)"
-    )
-
-    # --- failing symbol ---
-    lines.append("\n### Failing Symbol")
     if pack.failing_symbol is not None:
-        lines.append(f"- **id**: `{pack.failing_symbol.id}`")
-        lines.append(f"- **kind**: {pack.failing_symbol.kind}")
-        if pack.source:
-            lines.append(f"- **signature**: `{pack.source}`")
+        lines.append(
+            f"`{pack.failing_frame.name}` — "
+            f"`{pack.failing_symbol.path}:{pack.failing_frame.line}`"
+            f" (defined at line {pack.failing_symbol.line})"
+        )
     else:
-        lines.append("- *(not in index)*")
+        lines.append(
+            f"`{pack.failing_frame.path}` line {pack.failing_frame.line}"
+            f"  (`{pack.failing_frame.name}`) — *not in index*"
+        )
 
-    # --- call stack ---
-    lines.append("\n### Call Stack (crash-site first)")
-    for frame, sym in pack.callers:
-        sym_label = f"`{sym.qualified_name}`" if sym else "*not in index*"
-        lines.append(f"- `{frame.name}` @ `{frame.path}:{frame.line}` → {sym_label}")
+    # --- source ---
+    lines.append("\n### Source of the failing function")
+    if pack.source:
+        lines.append("```python")
+        lines.append(pack.source)
+        lines.append("```")
+    else:
+        lines.append("*(not in index)*")
+
+    # --- direct callers ---
+    lines.append("\n### Direct callers")
+    if pack.callers:
+        for sym in pack.callers:
+            lines.append(f"- `{sym.name}` — `{sym.path}:{sym.line}`")
+    else:
+        lines.append("- *(none)*")
 
     # --- callees ---
-    lines.append("\n### Direct Callees")
+    lines.append("\n### Direct callees")
     if pack.callees:
         for sym in pack.callees:
             lines.append(f"- `{sym.qualified_name}` ({sym.kind})")
     else:
-        lines.append("- *(none)*")
+        lines.append("- none")
 
     # --- blast radius ---
     lines.append("\n### Blast Radius (transitive callers)")
     if pack.blast_radius:
         for sid, depth in pack.blast_radius[:20]:
-            sym = pack.failing_symbol  # placeholder for label
             label = sid
             lines.append(f"- depth {depth}: `{label}`")
         if len(pack.blast_radius) > 20:
@@ -194,6 +214,12 @@ def render_markdown(pack: EvidencePack) -> str:
             lines.append(f"- `{sym.qualified_name}` @ `{sym.path}:{sym.line}`")
     else:
         lines.append("- *(no tests found in blast radius)*")
+
+    # --- call stack ---
+    lines.append("\n### Call Stack (crash-site first)")
+    for frame, sym in pack.call_stack:
+        sym_label = f"`{sym.qualified_name}`" if sym else "*not in index*"
+        lines.append(f"- `{frame.name}` @ `{frame.path}:{frame.line}` → {sym_label}")
 
     # --- unmapped ---
     if pack.unmapped_frames:
