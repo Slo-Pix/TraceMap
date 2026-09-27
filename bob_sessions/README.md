@@ -14,6 +14,7 @@ Each screenshot shows the task title, its Bobcoin cost, and the context breakdow
 | task06+07 | **build feature** — fix engine, CLI, and the end-to-end proof | 13.27 | `tracemap_task06_07_engine_and_proof_summary.png` |
 | task08 | **build feature** — the Textual TUI | 9.71 | `tracemap_task08_tui_build_summary.png` |
 | task08 | **parallel agents** — three subagents, one per TUI widget | (same task) | `tracemap_task08_parallel_subagents_fanout.png` |
+| task09 | **review code** — audited its own work, found a real defect | 4.39 | `tracemap_task09_code_review_summary.png` |
 | task10 | **document understanding** — README, docstrings, commit | 3.14 | `tracemap_task10_docs_and_docstrings_summary.png` |
 
 ## Parallel execution
@@ -100,6 +101,31 @@ patch restored:
 ```
 
 The application now exits 0 and prints `training 0.00` instead of crashing.
+
+## Bob reviewed its own work and found a real bug
+
+`tracemap_task09_code_review_summary.png` shows the final review, run under explicit
+freeze conditions: fix correctness defects, report everything else, verify by running.
+
+Bob worked through each candidate defect and **dismissed most of them with reasoning**
+rather than making speculative edits — checking whether `failing_frame` could be `None`
+at each access point and concluding "No defect here" where the guards already held.
+
+It then found one that mattered. `VerifyResult.ok` returned `True` unconditionally:
+
+```python
+# before — regression_introduced is ALWAYS empty when passed_before is empty
+return len(self.regression_introduced) == 0
+# after
+return len(self.failed_after) == 0 and len(self.regression_introduced) == 0
+```
+
+In the single-pass CLI workflow `passed_before` is empty, so `regression_introduced`
+could never be populated — meaning **a broken patch would have been reported green.**
+That defect sat in the harness whose entire job is proving a fix works.
+
+Bob also replaced a deprecated `tempfile.mktemp` call (a TOCTOU race) and deliberately
+left two issues unfixed, naming them in its report rather than touching frozen code.
 
 ## How Bob built TraceMap
 
