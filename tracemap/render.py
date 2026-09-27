@@ -25,7 +25,7 @@ from tracemap.theme import (
 __all__ = ["render_pack"]
 
 
-def _repo_root(pack: "EvidencePack") -> str:
+def _repo_root(pack: EvidencePack) -> str:
     """Infer the indexed repo root by subtracting the symbol's relative path
     from its absolute frame path. Returns "" when it cannot be determined."""
     sym = pack.failing_symbol
