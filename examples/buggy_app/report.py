@@ -12,6 +12,8 @@ def divide_total(total: float, count: int) -> float:
 
 def average_per_category(entries: list[dict[str, object]]) -> float:
     """Mean amount across one category's entries."""
+    if not entries:
+        return 0.0
     total = sum(float(entry["amount"]) for entry in entries)
     return divide_total(total, len(entries))
 

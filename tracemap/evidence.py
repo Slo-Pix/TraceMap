@@ -109,7 +109,7 @@ def build_evidence(trace_text: str, repo: Path) -> EvidencePack:
     # direct callers / callees and wider blast radius
     callers: list[Symbol] = []
     callees: list[Symbol] = []
-    blast_radius: list[tuple[str, int]] = []
+    blast_radius: list[tuple[Symbol, int]] = []
     covering_tests: list[Symbol] = []
 
     if failing_symbol is not None:

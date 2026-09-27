@@ -58,8 +58,9 @@ def _pytest_json(repo: Path, test_paths: list[str]) -> dict[str, str]:
         "-m",
         "pytest",
         "--tb=no",
-        "-q",
+        "-v",
         "--no-header",
+        "--override-ini=addopts=",  # suppress project-level -q so -v takes effect
         *test_paths,
     ]
     result = subprocess.run(
